@@ -17,7 +17,9 @@ x = th.randn(4, 70) . #edges size 80, #nodes size 60
 g.ndata['x'] = x
 g.edata['w'] = th.randn(10,80)
 
-gdefunc = GCDEFunc(input_dim=64, hidden_dim=64, graph=g, activation=torch.tanh, dropout=0.9).to(device)
+gdefunc = GAT(g,15,15,nn.ReLU())
+
+#GCDEFunc(input_dim=15, hidden_dim=128, graph=g, activation=torch.tanh, dropout=0.9).to(device)
 
 # dopri5 is an adaptive step solver and will call `gdefunc` several times to ensure correctness up to pre-specified 
 # tolerance levels. As suggested in the original Neural ODE paper and as observed during internal tests, lower tolerances 
@@ -25,9 +27,9 @@ gdefunc = GCDEFunc(input_dim=64, hidden_dim=64, graph=g, activation=torch.tanh, 
 gde = ODEBlock(odefunc=gdefunc, method='rk4', atol=1e-3, rtol=1e-3, adjoint=True).to(device)
 
 
-m = nn.Sequential(GCNLayer(g=g, in_feats=num_feats, out_feats=64, activation=F.relu, dropout=0.5),
+m = nn.Sequential(         #GCNLayer(g=g, in_feats=num_feats, out_feats=128, activation=F.relu, dropout=0.5),
                   gde,
-                  GCNLayer(g=g, in_feats=64, out_feats=n_classes, activation=None, dropout=0.)
+                  GCNLayer(g=g, in_feats=15, out_feats=15, activation=None, dropout=0.)
                   ).to(device)
 
 opt = torch.optim.Adam(m.parameters(), lr=1e-3, weight_decay=0.001)
@@ -46,7 +48,6 @@ for i in range(steps): # looping over epochs
     outputs = m(X)
     f_time = time.time() - start_time
 
-    nfe = m._modules['1'].odefunc.nfe
     y_pred = outputs
 
     loss = criterion(y_pred, Y)
@@ -64,7 +65,7 @@ for i in range(steps): # looping over epochs
 
         # calculating outputs again with zeroed dropout
         y_pred = m(X)
-        m._modules['1'].odefunc.nfe = 0
+
 
         train_loss = loss.item()
         train_acc = accuracy(y_pred, Y).item()
