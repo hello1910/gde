@@ -1,6 +1,10 @@
 import dgl
 import torch as th
 
+##TODO:
+##Use existing dataloaders for train, val, and test
+##Augment ODE so it has nonlinear capabilities??
+
 g = dgl.DGLGraph()
 g.add_nodes(4)
 # A couple edges one-by-one
