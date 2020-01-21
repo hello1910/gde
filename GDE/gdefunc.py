@@ -11,7 +11,7 @@ class GCDEFunc(nn.Module):
                  dropout:int):
         """Standard GCDN ODE function class. To be passed to an ODEBlock"""
         super().__init__()
-        self.l = GAT(graph,input_dim,hidden_dim,activation=activation,dropout=dropout)  #GCNLayer(graph, input_dim, hidden_dim, activation=activation, dropout=dropout)
+        self.l = GAT(graph,input_dim,hidden_dim,activation=activation)  #GCNLayer(graph, input_dim, hidden_dim, activation=activation, dropout=dropout)
         self.nfe = 0
         self.g = graph
     
