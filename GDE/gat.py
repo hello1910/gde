@@ -16,17 +16,18 @@ from dgl.nn.pytorch import edge_softmax, GATConv
 class GAT(nn.Module):
     def __init__(self,
                  g,
-                 num_layers,
                  in_dim,
-                 num_hidden,
                  num_classes,
-                 heads,
                  activation,
                  feat_drop,
                  attn_drop,
                  negative_slope,
                  residual):
         super(GAT, self).__init__()
+        num_layers=2
+        num_hidden=256
+        heads=5
+        self.activation=activation
         self.g = g
         self.num_layers = num_layers
         self.gat_layers = nn.ModuleList()
@@ -52,4 +53,4 @@ class GAT(nn.Module):
             h = self.gat_layers[l](self.g, h).flatten(1)
         # output projection
         logits = self.gat_layers[-1](self.g, h).mean(1)
-        return logits
+        return self.activation(logits)
