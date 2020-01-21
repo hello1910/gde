@@ -19,11 +19,7 @@ class GAT(nn.Module):
                  g,
                  in_dim,
                  num_classes,
-                 activation,
-                 feat_drop,
-                 attn_drop,
-                 negative_slope,
-                 residual):
+                 activation):
         super(GAT, self).__init__()
         feat_drop=0.6
         attn_drop=0.6
