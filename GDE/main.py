@@ -30,3 +30,53 @@ m = nn.Sequential(GCNLayer(g=g, in_feats=num_feats, out_feats=64, activation=F.r
                   GCNLayer(g=g, in_feats=64, out_feats=n_classes, activation=None, dropout=0.)
                   ).to(device)
 
+opt = torch.optim.Adam(m.parameters(), lr=1e-3, weight_decay=0.001)
+criterion = torch.nn.MSELoss()
+logger = PerformanceContainer(data={'train_loss':[], 'train_accuracy':[],
+                                   'test_loss':[], 'test_accuracy':[],
+                                   'forward_time':[], 'backward_time':[],
+                                   'nfe': []})
+steps = 400
+verbose_step = 50
+num_grad_steps = 0
+
+for i in range(steps): # looping over epochs
+    m.train()
+    start_time = time.time()
+    outputs = m(X)
+    f_time = time.time() - start_time
+
+    nfe = m._modules['1'].odefunc.nfe
+    y_pred = outputs
+
+    loss = criterion(y_pred, Y)
+    opt.zero_grad()
+    
+    start_time = time.time()
+    loss.backward()
+    b_time = time.time() - start_time
+    
+    opt.step()
+    num_grad_steps += 1
+
+    with torch.no_grad():
+        m.eval()
+
+        # calculating outputs again with zeroed dropout
+        y_pred = m(X)
+        m._modules['1'].odefunc.nfe = 0
+
+        train_loss = loss.item()
+        train_acc = accuracy(y_pred, Y).item()
+        test_acc = accuracy(y_pred, Y).item()
+        test_loss = criterion(y_pred, Y).item()
+        logger.deep_update(logger.data, dict(train_loss=[train_loss], train_accuracy=[train_acc],
+                           test_loss=[test_loss], test_accuracy=[test_acc], nfe=[nfe], forward_time=[f_time],
+                           backward_time=[b_time]))
+
+    if num_grad_steps % verbose_step == 0:
+        print('[{}], Loss: {:3.3f}, Train Accuracy: {:3.3f}, Test Accuracy: {:3.3f}, NFE: {}'.format(num_grad_steps,
+                                                                                                    train_loss,
+                                                                                                    train_acc,
+                                                                                                    test_acc,
+                                                                                                    nfe))
