@@ -4,6 +4,7 @@ import torch as th
 ##TODO:
 ##Use existing dataloaders for train, val, and test
 ##Augment ODE so it has nonlinear capabilities??
+##Debug resulting
 
 g = dgl.DGLGraph()
 g.add_nodes(4)
