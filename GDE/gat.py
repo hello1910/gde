@@ -13,6 +13,7 @@ import dgl.function as fn
 from dgl.nn.pytorch import edge_softmax, GATConv
 
 
+
 class GAT(nn.Module):
     def __init__(self,
                  g,
@@ -24,9 +25,14 @@ class GAT(nn.Module):
                  negative_slope,
                  residual):
         super(GAT, self).__init__()
+        feat_drop=0.6
+        attn_drop=0.6
+        negative_slope=0.2
+        residual=False
         num_layers=2
         num_hidden=256
-        heads=5
+        heads=([5] * 2) + [1]
+
         self.activation=activation
         self.g = g
         self.num_layers = num_layers
